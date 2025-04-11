@@ -1,8 +1,8 @@
 using Rebus.Handlers;
 using System.Text.Json;
-using Thunders.TechTest.Abstractions.Events;
 using Thunders.TechTest.ApiService.DataBase.Context;
 using Thunders.TechTest.ApiService.DataBase.Models;
+using Thunders.TechTest.ApiService.Events;
 
 namespace Thunders.TechTest.ApiService.Consumers.Handlers
 {
@@ -22,8 +22,8 @@ namespace Thunders.TechTest.ApiService.Consumers.Handlers
 
             if (errors.Any())
             {
-                _dbContext.EventLogs.Add(new EventLog 
-                { 
+                _dbContext.EventLogs.Add(new EventLog
+                {
                     EventId = eventMessage.EventId,
                     Status = "Failed",
                     ErrorMessage = "Validation errors were found in business rules",

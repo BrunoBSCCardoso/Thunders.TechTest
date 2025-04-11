@@ -1,8 +1,9 @@
 using Microsoft.OpenApi.Models;
-using Thunders.TechTest.Abstractions.Interfaces;
 using Thunders.TechTest.ApiService;
 using Thunders.TechTest.ApiService.DataBase.Context;
+using Thunders.TechTest.ApiService.Interfaces;
 using Thunders.TechTest.ApiService.Producers;
+using Thunders.TechTest.ApiService.Services;
 using Thunders.TechTest.OutOfBox.Database;
 using Thunders.TechTest.OutOfBox.Queues;
 
@@ -20,6 +21,18 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "An API for generating detailed billing reports for toll units in Brazil"
     });
+});
+
+var redisConnectionString = builder.Configuration.GetConnectionString("cache");
+
+if (string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    throw new InvalidOperationException("Redis connection string 'cache' not found. Ensure Redis is configured via Aspire AppHost.");
+}
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("cache");
 });
 
 var features = Features.BindFromConfiguration(builder.Configuration);
@@ -40,7 +53,8 @@ if (features.UseEntityFramework)
 //DI
 builder.Services.AddScoped<IMessageSender, RebusMessageSender>();
 builder.Services.AddScoped<ITollStationUsageRegisteredProducer, TollStationUsageRegisteredProducer>();
-
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 var app = builder.Build();
 
@@ -53,6 +67,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
         options.RoutePrefix = string.Empty;
     });
 }
+
+app.UseAutomaticMigrations<ThunderDbContext>();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();

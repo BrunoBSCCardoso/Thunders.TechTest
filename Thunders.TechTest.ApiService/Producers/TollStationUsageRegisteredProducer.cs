@@ -1,5 +1,5 @@
-﻿using Thunders.TechTest.Abstractions.Events;
-using Thunders.TechTest.Abstractions.Interfaces;
+﻿using Thunders.TechTest.ApiService.Events;
+using Thunders.TechTest.ApiService.Interfaces;
 using Thunders.TechTest.OutOfBox.Queues;
 
 namespace Thunders.TechTest.ApiService.Producers
@@ -13,7 +13,7 @@ namespace Thunders.TechTest.ApiService.Producers
             _messageSender = messageSender;
         }
 
-        public async Task Register(TollStationUsageRegisteredEvent messageEvent)
+        public async Task RegisterAsync(TollStationUsageRegisteredEvent messageEvent)
         {
             await _messageSender.SendLocal(messageEvent);
         }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Thunders.TechTest.Abstractions.Events;
-using Thunders.TechTest.Abstractions.Interfaces;
 using Thunders.TechTest.ApiService.API.Dtos;
+using Thunders.TechTest.ApiService.Events;
+using Thunders.TechTest.ApiService.Interfaces;
 
 namespace Thunders.TechTest.ApiService.API.Controllers
 {
@@ -20,7 +20,7 @@ namespace Thunders.TechTest.ApiService.API.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateNewRegister([FromBody] TollStationOperationDto inputDto)
+        public async Task<IActionResult> CreateNewRegisterAsync([FromBody] TollStationOperationDto inputDto)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Thunders.TechTest.ApiService.API.Controllers
                     VehicleType = (int)inputDto.VehicleType
                 };
 
-                await _producer.Register(messageEvent);
+                await _producer.RegisterAsync(messageEvent);
 
                 _logger.LogDebug($"Event registered successfully with the EventID {messageEvent.EventId}");
 
