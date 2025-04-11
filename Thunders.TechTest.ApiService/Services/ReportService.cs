@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using System.Linq;
 using System.Text.Json;
 using Thunders.TechTest.ApiService.API.Dtos;
 using Thunders.TechTest.ApiService.DataBase.Context;
@@ -34,19 +32,33 @@ namespace Thunders.TechTest.ApiService.Services
                 query = query.Where(w => w.City == requestDto.City);
             }
 
-            var result = await query.GroupBy(t => new
-                              {
-                                  Hour = t.Timestamp,
-                                  t.City
-                              })
-                              .Select(p => new ReportTotalAmountPaidByHourAndCityResponseDto
-                              {
-                                  TimeStamp = p.Key.Hour,
-                                  City = p.Key.City,
-                                  TotalAmount = p.Sum(x => x.AmountPaid)
-                              })
-                              .OrderBy(o => o.TimeStamp)
-                              .ToListAsync();
+            var rawData = await query.GroupBy(t => new
+                                  {
+                                      t.Timestamp.Year,
+                                      t.Timestamp.Month,
+                                      t.Timestamp.Day,
+                                      t.Timestamp.Hour,
+                                      t.City
+                                  })
+                                  .Select(g => new
+                                  {
+                                      g.Key.Year,
+                                      g.Key.Month,
+                                      g.Key.Day,
+                                      g.Key.Hour,
+                                      g.Key.City,
+                                      Total = g.Sum(x => x.AmountPaid)
+                                  })
+                                  .ToListAsync();
+
+            var result = rawData.Select(r => new ReportTotalAmountPaidByHourAndCityResponseDto
+                                {
+                                    TimeStamp = new DateTime(r.Year, r.Month, r.Day, r.Hour, 0, 0),
+                                    City = r.City,
+                                    TotalAmount = r.Total
+                                })
+                                .OrderBy(r => r.TimeStamp)
+                                .ToList();
 
             await _redisCache.GenerateCache(result, cacheKey);
 
@@ -71,7 +83,7 @@ namespace Thunders.TechTest.ApiService.Services
                     Amount = g.Count()
                 })
                 .AsQueryable();
-                
+
             var result = await query.ToListAsync();
 
             await _redisCache.GenerateCache(result, cacheKey);
@@ -93,7 +105,7 @@ namespace Thunders.TechTest.ApiService.Services
                 .Select(g => new ReportTopTollStationsWithHighestRevenueByMonthResponseDto
                 {
                     TollStation = g.Key,
-                    TotalRevenue = g.Count()
+                    TotalRevenue = g.Sum(x => x.AmountPaid)
                 })
                 .OrderByDescending(o => o.TotalRevenue)
                 .Take(requestDto.NumberOfTollStations)
