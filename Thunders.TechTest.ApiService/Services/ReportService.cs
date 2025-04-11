@@ -65,17 +65,17 @@ namespace Thunders.TechTest.ApiService.Services
             return result;
         }
 
-        public async Task<IList<ReportVehicleTypeCountByStationResponseDto>> GetVehicleTypeCountByStationAsync(string tollStation, DateTime startDate, DateTime endDate)
+        public async Task<IList<ReportVehicleTypeCountByStationResponseDto>> GetVehicleTypeCountByStationAsync(ReportVehicleCountByTollStationRequestDto requestDto)
         {
-            var cacheKey = $"report:vehicle-count:{tollStation.ToLower()}{startDate}{endDate}";
+            var cacheKey = $"report:vehicle-count:{requestDto.TollStation.ToLower()}{requestDto.StartDate}{requestDto.EndDate}";
             var cached = await _redisCache.GetCacheByKey(cacheKey);
 
             if (!string.IsNullOrEmpty(cached))
                 return JsonSerializer.Deserialize<List<ReportVehicleTypeCountByStationResponseDto>>(cached)!;
 
             var query = _context.TollStationUsages
-                .Where(t => t.StationName == tollStation
-                            && (t.Timestamp >= startDate && t.Timestamp <= endDate))
+                .Where(t => t.StationName == requestDto.TollStation
+                            && (t.Timestamp >= requestDto.StartDate && t.Timestamp <= requestDto.EndDate))
                 .GroupBy(t => t.VehicleType)
                 .Select(g => new ReportVehicleTypeCountByStationResponseDto
                 {

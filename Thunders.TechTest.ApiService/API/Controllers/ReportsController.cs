@@ -43,7 +43,7 @@ namespace Thunders.TechTest.ApiService.API.Controllers
                 if (string.IsNullOrWhiteSpace(requestDto.TollStation))
                     return BadRequest("Toll station is required.");
 
-                var result = await _service.GetVehicleTypeCountByStationAsync(requestDto.TollStation, requestDto.StartDate, requestDto.EndDate);
+                var result = await _service.GetVehicleTypeCountByStationAsync(requestDto);
 
                 return Ok(result);
             }

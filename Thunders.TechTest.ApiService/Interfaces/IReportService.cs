@@ -16,7 +16,7 @@ namespace Thunders.TechTest.ApiService.Interfaces
         /// </summary>
         /// <param name="tollStation"> Toll station name </param>
         /// <returns> Report containing date, vehicle and amount </returns>
-        Task<IList<ReportVehicleTypeCountByStationResponseDto>> GetVehicleTypeCountByStationAsync(string tollStation, DateTime startDate, DateTime endDate);
+        Task<IList<ReportVehicleTypeCountByStationResponseDto>> GetVehicleTypeCountByStationAsync(ReportVehicleCountByTollStationRequestDto requestDto);
 
         /// <summary>
         /// Report that checks the toll stations that invoiced the most according to a range of dates
